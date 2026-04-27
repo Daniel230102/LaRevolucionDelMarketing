@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "Company": {
+      "title": "Company",
+      "description": "Details about a managed company",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "domain": { "type": "string" },
+        "sector": { "type": "string" },
+        "location": { "type": "string" },
+        "socials": { "type": "object" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "confidence": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product or service offered by the company",
+      "type": "object",
+      "properties": {
+        "companyId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "benefits": { "type": "array" },
+        "targetAudience": { "type": "string" },
+        "price": { "type": "number" },
+        "competitiveAdvantages": { "type": "string" },
+        "maturity": { "type": "string" },
+        "aiSuggestions": { "type": "string" }
+      },
+      "required": ["name", "companyId"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Potential customer discovered",
+      "type": "object",
+      "properties": {
+        "companyId": { "type": "string" },
+        "name": { "type": "string" },
+        "sector": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "web": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "role": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "source": { "type": "string" },
+        "capturedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Competitor": {
+      "title": "Competitor",
+      "description": "Competitive analysis entry",
+      "type": "object",
+      "properties": {
+        "companyId": { "type": "string" },
+        "name": { "type": "string" },
+        "web": { "type": "string" },
+        "valueProposition": { "type": "string" },
+        "pricing": { "type": "string" },
+        "socials": { "type": "object" },
+        "weaknesses": { "type": "string" },
+        "strengths": { "type": "string" },
+        "differentiation": { "type": "string" }
+      }
+    },
+    "AutomationTask": {
+      "title": "AutomationTask",
+      "description": "Scheduled social media or marketing task",
+      "type": "object",
+      "properties": {
+        "companyId": { "type": "string" },
+        "channel": { "type": "string" },
+        "contentType": { "type": "string" },
+        "content": { "type": "string" },
+        "hashtags": { "type": "array" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "adaptation": { "type": "string" }
+      }
+    },
+    "TrackReport": {
+      "title": "TrackReport",
+      "description": "Action and performance tracking log",
+      "type": "object",
+      "properties": {
+        "companyId": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metrics": { "type": "object" },
+        "category": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/companies/{companyId}": {
+      "schema": "Company",
+      "description": "Root company document"
+    },
+    "/companies/{companyId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Products for the company"
+    },
+    "/companies/{companyId}/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Captured leads"
+    },
+    "/companies/{companyId}/competitors/{competitorId}": {
+      "schema": "Competitor",
+      "description": "Competitive insights"
+    },
+    "/companies/{companyId}/automations/{taskId}": {
+      "schema": "AutomationTask",
+      "description": "Automation queue"
+    },
+    "/companies/{companyId}/reports/{reportId}": {
+      "schema": "TrackReport",
+      "description": "Activity and audit logs"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "managedCompanies": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "User profiles and permissions"
+    }
+  }
+}

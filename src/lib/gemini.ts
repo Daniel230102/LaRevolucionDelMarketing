@@ -1,0 +1,17 @@
+import { GoogleGenAI } from "@google/genai";
+
+const apiKey = process.env.GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("GEMINI_API_KEY not found in environment variables.");
+}
+
+export const ai = new GoogleGenAI({ 
+  apiKey: apiKey || "" 
+});
+
+export const MODELS = {
+  flash: "gemini-3-flash-preview",
+  pro: "gemini-3.1-pro-preview",
+  image: "gemini-2.5-flash-image",
+};

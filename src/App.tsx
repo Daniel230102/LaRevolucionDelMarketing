@@ -1,0 +1,88 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { ReactNode } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/AuthContext';
+import { LoginForm } from './components/auth/LoginForm';
+import { Sidebar } from './components/layout/Sidebar';
+import { Dashboard } from './pages/Dashboard';
+import { IdentityPage } from './pages/IdentityPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { CompetitorsPage } from './pages/CompetitorsPage';
+import { LeadsPage } from './pages/LeadsPage';
+import { MarketingPage } from './pages/MarketingPage';
+import { AutomationPage } from './pages/AutomationPage';
+import { ROIPage } from './pages/ROIPage';
+import { TrackReportPage } from './pages/TrackReportPage';
+import { CompanyProvider, useCompany } from './lib/CompanyContext';
+import { AnimatePresence } from 'motion/react';
+
+function ProtectedLayout({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const { selectedCompany } = useCompany();
+  const location = useLocation();
+
+  if (!user) return <Navigate to="/login" />;
+
+  return (
+    <div className="flex min-h-screen bg-[#F8F9FA] text-[#1A1A1A]">
+      <Sidebar />
+      <main className="flex-1 p-8 overflow-y-auto">
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {location.pathname === '/' ? 'Dashboard' : 
+               location.pathname.slice(1).charAt(0).toUpperCase() + location.pathname.slice(2)}
+            </h1>
+            <p className="text-sm text-gray-500">
+              {selectedCompany ? `Gestión activa: ${selectedCompany.name}` : 'Selecciona una empresa para comenzar'}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+             <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border border-blue-200">
+                {user.email?.charAt(0).toUpperCase()}
+             </div>
+          </div>
+        </header>
+        <AnimatePresence mode="wait">
+           {children}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+}
+
+function LoginRoute() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/" replace />;
+  return <LoginForm />;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CompanyProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
+            <Route path="/identity" element={<ProtectedLayout><IdentityPage /></ProtectedLayout>} />
+            <Route path="/products" element={<ProtectedLayout><ProductsPage /></ProtectedLayout>} />
+            <Route path="/competitors" element={<ProtectedLayout><CompetitorsPage /></ProtectedLayout>} />
+            <Route path="/leads" element={<ProtectedLayout><LeadsPage /></ProtectedLayout>} />
+            <Route path="/marketing" element={<ProtectedLayout><MarketingPage /></ProtectedLayout>} />
+            <Route path="/automation" element={<ProtectedLayout><AutomationPage /></ProtectedLayout>} />
+            <Route path="/roi" element={<ProtectedLayout><ROIPage /></ProtectedLayout>} />
+            <Route path="/track" element={<ProtectedLayout><TrackReportPage /></ProtectedLayout>} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </BrowserRouter>
+      </CompanyProvider>
+    </AuthProvider>
+  );
+}
+

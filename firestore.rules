@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives & Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Pillar 1: The Master Gate
+    function isCompanyOwner(companyId) {
+      return isSignedIn() && get(/databases/$(database)/documents/companies/$(companyId)).data.ownerId == request.auth.uid;
+    }
+
+    // Pillar 2: Validation Blueprints
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'managedCompanies', 'createdAt'])
+        && data.email is string && data.email.size() > 0 && data.email.size() < 256
+        && data.managedCompanies is list
+        && data.createdAt is string;
+    }
+
+    function isValidCompany(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 256
+        && data.ownerId == request.auth.uid
+        && data.createdAt is string
+        // Optional fields validation
+        && (!('sector' in data) || (data.sector is string && data.sector.size() < 256))
+        && (!('domain' in data) || (data.domain is string && data.domain.size() < 256))
+        && (!('description' in data) || (data.description is string && data.description.size() < 5000))
+        && (!('confidence' in data) || (data.confidence is number));
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 256;
+    }
+
+    function isValidLead(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 256;
+    }
+
+    function isValidReport(data) {
+      return data.action is string && data.category is string && (data.timestamp is string || data.timestamp is timestamp);
+    }
+
+    // ---------------------------------------------------------
+    // Phase 4: Match Blocks
+    // ---------------------------------------------------------
+
+    // User Profile
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) 
+        && incoming().email == existing().email; // Email immutable
+    }
+
+    // Root Collection: Companies
+    match /companies/{companyId} {
+      allow create: if isSignedIn() && isValidId(companyId) && isValidCompany(incoming());
+      
+      allow get: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow update: if (
+        isSignedIn() && existing().ownerId == request.auth.uid && isValidCompany(incoming()) &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt
+      );
+
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      // Sub-collections
+      match /products/{productId} {
+        allow create: if isCompanyOwner(companyId) && isValidProduct(incoming());
+        allow read: if isCompanyOwner(companyId);
+        allow update: if isCompanyOwner(companyId) && isValidProduct(incoming())
+          && incoming().companyId == existing().companyId;
+        allow delete: if isCompanyOwner(companyId);
+      }
+
+      match /leads/{leadId} {
+        allow create: if isCompanyOwner(companyId) && isValidLead(incoming());
+        allow read: if isCompanyOwner(companyId);
+        allow update: if isCompanyOwner(companyId) && isValidLead(incoming())
+          && incoming().companyId == existing().companyId;
+        allow delete: if isCompanyOwner(companyId);
+      }
+
+      match /competitors/{competitorId} {
+        allow create, read, update, delete: if isCompanyOwner(companyId);
+      }
+
+      match /automations/{taskId} {
+        allow create: if isCompanyOwner(companyId);
+        allow read: if isCompanyOwner(companyId);
+        allow update: if isCompanyOwner(companyId) && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adaptation', 'content', 'channel'])
+        );
+        allow delete: if isCompanyOwner(companyId);
+      }
+
+      match /reports/{reportId} {
+        allow create: if isCompanyOwner(companyId) && isValidReport(incoming());
+        allow read: if isCompanyOwner(companyId);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

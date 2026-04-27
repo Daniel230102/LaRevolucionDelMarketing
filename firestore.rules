@@ -99,10 +99,7 @@ service cloud.firestore {
       }
 
       match /automations/{taskId} {
-        allow create: if isCompanyOwner(companyId);
-        allow read: if isCompanyOwner(companyId);
-        allow update: if isCompanyOwner(companyId) || (isSignedIn() && existing().ownerId == request.auth.uid);
-        allow delete: if isCompanyOwner(companyId) || (isSignedIn() && existing().ownerId == request.auth.uid);
+        allow read, write: if isCompanyOwner(companyId);
       }
 
       match /reports/{reportId} {

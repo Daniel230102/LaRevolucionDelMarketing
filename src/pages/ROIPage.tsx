@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Calculator, TrendingUp, DollarSign, Users, Target, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useCompany } from '../lib/CompanyContext';
 import { useTrack } from '../lib/useTrack';
@@ -19,17 +19,27 @@ export function ROIPage() {
     avgLifetimeValue: 500
   });
   const [prediction, setPrediction] = useState<any>(null);
+  const [activeScenario, setActiveScenario] = useState<string>('medium');
 
   const calculateROI = async () => {
     setIsEstimating(true);
     try {
       const totalCost = data.tools + data.ads + data.human + data.investment;
       
-      const prompt = `Calculate and predict the ROI of a marketing campaign for ${selectedCompany?.name}.
-      Costs: $${totalCost}
-      Expectations: ${data.expectedLeads} leads, AVG Customer Value $${data.avgLifetimeValue}.
-      Provide a structured JSON return with scenarios: conservative, medium, optimistic (returns, ROI%, conversions).
-      Also add 3 recommendations to improve ROI and a confidenceScore (0.1).`;
+      const prompt = `Calcula y predice el ROI de una campaña de marketing para la empresa ${selectedCompany?.name}.
+      Costes Totales (Inversión): $${totalCost}
+      Expectativas: ${data.expectedLeads} leads, Valor Medio del Cliente $${data.avgLifetimeValue}.
+      
+      IMPORTANTE: Devuelve un objeto JSON estructurado con los escenarios: "conservative" (conservador), "medium" (moderado), "optimistic" (optimista).
+      Cada escenario debe tener: 
+      - returns: (número) Ingresos brutos estimados.
+      - roi_percent: (número) Porcentaje de retorno.
+      - conversions: (número) Número de ventas estimadas.
+      - description: (texto largo en ESPAÑOL) Una explicación detallada de por qué se daría este escenario y qué factores influyen.
+
+      Además, incluye:
+      - recommendations: Un array de 3 recomendaciones específicas en ESPAÑOL.
+      - confidenceScore: Un número entre 0 y 1.`;
 
       const response = await ai.models.generateContent({
         model: MODELS.flash,
@@ -41,12 +51,19 @@ export function ROIPage() {
 
       const result = JSON.parse(response.text);
       setPrediction(result);
+      setActiveScenario('medium');
       logAction("ROI Calculado", "Finanzas", `Se generó una predicción de ROI para la campaña actual`, { totalCost });
     } catch (e) {
       console.error(e);
     } finally {
       setIsEstimating(false);
     }
+  };
+
+  const scenarioLabels: Record<string, string> = {
+    conservative: 'Conservador',
+    medium: 'Moderado',
+    optimistic: 'Optimista'
   };
 
   if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero.</div>;
@@ -103,31 +120,62 @@ export function ROIPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                {['conservative', 'medium', 'optimistic'].map(sc => (
-                 <div key={sc} className={cn(
-                   "p-6 rounded-2xl border flex flex-col justify-between h-48 transition-all",
-                   sc === 'medium' ? "bg-white border-blue-600 shadow-blue-600/5 shadow-xl scale-105 z-10" : "bg-white border-gray-100"
-                 )}>
+                 <button 
+                   key={sc} 
+                   onClick={() => setActiveScenario(sc)}
+                   className={cn(
+                    "p-6 rounded-2xl border flex flex-col justify-between h-48 transition-all text-left group",
+                    activeScenario === sc 
+                      ? "bg-white border-blue-600 shadow-blue-600/10 shadow-xl scale-105 z-10" 
+                      : "bg-white border-gray-100 hover:border-blue-200"
+                   )}
+                 >
                     <div>
-                       <span className="text-[10px] uppercase font-bold text-gray-400">{sc}</span>
-                       <h4 className="text-2xl font-black text-gray-900">${prediction.scenarios[sc].returns}</h4>
+                       <span className="text-[10px] uppercase font-bold text-gray-400">{scenarioLabels[sc]}</span>
+                       <h4 className={cn("text-2xl font-black", activeScenario === sc ? "text-blue-600" : "text-gray-900")}>
+                         ${prediction?.scenarios?.[sc]?.returns ?? 0}
+                       </h4>
                     </div>
                     <div className="pt-4 border-t border-gray-50">
                        <div className="flex justify-between items-center">
                           <span className="text-[10px] font-bold text-gray-500">ROI%</span>
                           <span className={cn("text-xs font-bold", sc === 'conservative' ? 'text-gray-600' : 'text-green-600')}>
-                            {prediction.scenarios[sc].roi_percent}%
+                            {prediction?.scenarios?.[sc]?.roi_percent ?? 0}%
                           </span>
                        </div>
                     </div>
-                 </div>
+                 </button>
                ))}
             </div>
+
+            <AnimatePresence mode="wait">
+              <motion.section 
+                key={activeScenario}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="bg-blue-50/50 rounded-2xl p-8 border border-blue-100/50"
+              >
+                 <div className="flex items-center gap-3 mb-4">
+                    <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                       <Target className="h-4 w-4" />
+                    </div>
+                    <div>
+                       <h3 className="font-bold text-blue-900">Análisis: Escenario {scenarioLabels[activeScenario]}</h3>
+                       <p className="text-xs text-blue-600 font-medium">Conversiones estimadas: {prediction?.scenarios?.[activeScenario]?.conversions}</p>
+                    </div>
+                 </div>
+                 <p className="text-sm text-blue-800/80 leading-relaxed italic">
+                    {prediction?.scenarios?.[activeScenario]?.description || "Sin descripción disponible para este escenario."}
+                 </p>
+              </motion.section>
+            </AnimatePresence>
 
             <section className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm space-y-6">
                <div className="flex items-center justify-between">
                   <h3 className="font-bold text-lg">Recomendaciones para maximizar ROI</h3>
                   <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-black tracking-widest uppercase">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Confianza: {prediction.confidenceScore * 100}%
+                    <ShieldCheck className="h-3.5 w-3.5" /> Confianza: {Math.round(prediction.confidenceScore * 100)}%
                   </div>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -143,7 +191,7 @@ export function ROIPage() {
             <section className="bg-gray-900 rounded-2xl p-8 text-white flex flex-col md:flex-row items-center gap-8">
                <div className="flex-1 space-y-2">
                   <h3 className="text-xl font-bold">Resumen de Predicción</h3>
-                  <p className="text-sm text-gray-400">Nuestro modelo analítico estima un escenario medio de retorno neto de <span className="text-blue-400 font-bold">${prediction.scenarios.medium.returns - (data.tools + data.ads + data.human + data.investment)}</span> tras descontar gastos.</p>
+                  <p className="text-sm text-gray-400">Nuestro modelo analítico estima un escenario medio de retorno neto de <span className="text-blue-400 font-bold">${(prediction?.scenarios?.medium?.returns ?? 0) - (data.tools + data.ads + data.human + data.investment)}</span> tras descontar gastos.</p>
                </div>
                <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700">
                   Descargar Informe <ArrowRight className="h-5 w-5" />

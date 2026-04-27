@@ -38,6 +38,24 @@ export function AutomationPage() {
     }
   };
 
+  const handleDeleteTask = async (e: React.MouseEvent, task: AutomationTask) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!selectedCompany) return;
+    
+    // Using a simple confirm first
+    if (confirm("¿Seguro que quieres eliminar esta automatización permanentemente?")) {
+      const path = `companies/${selectedCompany.id}/automations/${task.id}`;
+      try {
+        await deleteDoc(doc(db, path));
+        alert("Eliminado correctamente");
+      } catch (err) {
+        console.error("Error al eliminar:", err);
+        handleFirestoreError(err, OperationType.DELETE, path);
+      }
+    }
+  };
+
   const handleReschedule = async (e: React.MouseEvent, task: AutomationTask) => {
     e.stopPropagation();
     if (!selectedCompany) return;
@@ -47,11 +65,9 @@ export function AutomationPage() {
       const now = new Date();
       const currentScheduled = new Date(task.scheduledAt);
       
-      // Suggested peak hours: 10:00, 14:00, 18:00, 21:00
       const peakHours = [10, 14, 18, 21];
       let nextDate = new Date(currentScheduled);
       
-      // If we are rescheduling today, try next peak or tomorrow first peak
       let found = false;
       for (const hour of peakHours) {
         if (hour > currentScheduled.getHours() || nextDate.getDate() > now.getDate()) {
@@ -72,7 +88,7 @@ export function AutomationPage() {
         scheduledAt: nextDate.toISOString(),
         updatedAt: new Date().toISOString()
       });
-      alert(`Sugerencia de IA: Reprogramado para el ${nextDate.toLocaleDateString()} a las ${nextDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (Hora de alto impacto)`);
+      alert(`Sugerencia de IA: Reprogramado para el ${nextDate.toLocaleDateString()} a las ${nextDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, currentPath);
     }
@@ -141,7 +157,7 @@ export function AutomationPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={() => setSelectedTask(task)}
-                className="group flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all bg-gray-50/30 cursor-pointer"
+                className="group relative flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all bg-gray-50/30 cursor-pointer"
               >
                  <div className="flex items-center gap-4 min-w-[240px]">
                     <div className="h-12 w-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
@@ -164,47 +180,30 @@ export function AutomationPage() {
                           <Clock className="h-4 w-4 text-blue-500" /> {new Date(task.scheduledAt).toLocaleDateString()} • {new Date(task.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                        </span>
                     </div>
-                    <div className="flex items-center gap-3">
+                    
+                    <div className="flex items-center gap-3 relative z-50">
                        {task.status === 'pending' ? (
                          <>
                            <button 
                              onClick={(e) => handleReschedule(e, task)}
-                             title="Sugerir nueva hora"
-                             className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shadow-sm border border-blue-100"
+                             className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all shadow-sm border border-blue-100 cursor-pointer"
                            >
                              <RefreshCw className="h-4 w-4" />
                            </button>
                            <button 
                              onClick={(e) => handleMarkAsDone(e, task)}
-                             title="Marcar como realizado"
-                             className="p-2.5 rounded-xl bg-green-50 text-green-600 hover:bg-green-100 transition-all shadow-sm border border-green-100"
+                             className="p-2.5 rounded-xl bg-green-50 text-green-600 hover:bg-green-100 transition-all shadow-sm border border-green-100 cursor-pointer"
                            >
                              <CheckCircle2 className="h-4 w-4" />
                            </button>
                          </>
                        ) : (
-                         <>
-                           <div className="p-2.5 rounded-xl bg-green-50 text-green-600 shadow-sm border border-green-100">
-                             <CheckCircle2 className="h-4 w-4" />
-                           </div>
-                           <button 
-                             onClick={async (e) => {
-                               e.stopPropagation();
-                               const confirmed = window.confirm("¿Estás seguro de que quieres eliminar esta automatización permanentemente del historial?");
-                               if (confirmed) {
-                                 const taskDocRef = doc(db, 'companies', selectedCompany.id, 'automations', task.id);
-                                 try {
-                                   await deleteDoc(taskDocRef);
-                                 } catch (err) {
-                                   handleFirestoreError(err, OperationType.DELETE, `companies/${selectedCompany.id}/automations/${task.id}`);
-                                 }
-                               }
-                             }}
-                             className="p-2.5 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100 transition-all shadow-sm"
-                           >
-                             <Trash2 className="h-4 w-4" />
-                           </button>
-                         </>
+                         <button 
+                           onClick={(e) => handleDeleteTask(e, task)}
+                           className="p-2.5 rounded-xl bg-red-50 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-md border border-red-200 cursor-pointer z-50 block"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </button>
                        )}
                     </div>
                  </div>

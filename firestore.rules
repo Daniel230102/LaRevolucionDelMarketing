@@ -33,7 +33,8 @@ service cloud.firestore {
         // Optional fields validation
         && (!('sector' in data) || (data.sector is string && data.sector.size() < 256))
         && (!('domain' in data) || (data.domain is string && data.domain.size() < 256))
-        && (!('description' in data) || (data.description is string && data.description.size() < 5000))
+        && (!('description' in data) || (data.description is string && data.description.size() < 10000))
+        && (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() < 1500000))
         && (!('confidence' in data) || (data.confidence is number));
     }
 
@@ -100,10 +101,8 @@ service cloud.firestore {
       match /automations/{taskId} {
         allow create: if isCompanyOwner(companyId);
         allow read: if isCompanyOwner(companyId);
-        allow update: if isCompanyOwner(companyId) && (
-          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adaptation', 'content', 'channel'])
-        );
-        allow delete: if isCompanyOwner(companyId);
+        allow update: if isCompanyOwner(companyId) || (isSignedIn() && existing().ownerId == request.auth.uid);
+        allow delete: if isCompanyOwner(companyId) || (isSignedIn() && existing().ownerId == request.auth.uid);
       }
 
       match /reports/{reportId} {

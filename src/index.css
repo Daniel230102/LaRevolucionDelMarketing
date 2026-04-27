@@ -6,6 +6,26 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+.markdown-content h2 {
+  @apply text-xl font-black text-gray-900 mb-4 mt-8 flex items-center gap-2;
+}
+
+.markdown-content p {
+  @apply text-base text-gray-600 leading-relaxed mb-4;
+}
+
+.markdown-content ul {
+  @apply space-y-2 mb-6 ml-4;
+}
+
+.markdown-content li {
+  @apply flex items-start gap-2 text-gray-600 before:content-['→'] before:text-blue-500 before:font-bold before:mr-2;
+}
+
+.markdown-content strong {
+  @apply font-bold text-blue-700 bg-blue-50 px-1 rounded;
+}
+
 @layer base {
   body {
     @apply font-sans bg-[#F8F9FA] text-[#1A1A1A];

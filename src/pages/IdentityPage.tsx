@@ -53,6 +53,7 @@ export function IdentityPage() {
               email: { type: Type.STRING },
               phone: { type: Type.STRING },
               description: { type: Type.STRING },
+              logoUrl: { type: Type.STRING },
               confidence: { type: Type.NUMBER }
             },
             required: ["name"]
@@ -81,6 +82,29 @@ export function IdentityPage() {
       navigate('/');
     } catch (e) {
       console.error("Save failed", e);
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 800000) { // Increased limit
+        alert("El logotipo es demasiado grande. Por favor usa una imagen menor a 800KB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setResult((prev: any) => ({
+            ...(prev || { name: 'Empresa Nueva' }),
+            logoUrl: reader.result
+          }));
+        }
+      };
+      reader.onerror = () => {
+        alert("Error al cargar el logotipo.");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -123,11 +147,17 @@ export function IdentityPage() {
         >
           <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm col-span-2 flex items-start justify-between">
             <div className="flex gap-6 items-center">
-              <div className="h-20 w-20 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100">
-                <Building2 className="h-10 w-10 text-gray-300" />
+              <div className="h-20 w-20 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
+                {result.logoUrl ? (
+                  <img src={result.logoUrl} alt="Logo" className="max-h-full max-w-full object-contain p-2" referrerPolicy="no-referrer" />
+                ) : (
+                  <Building2 className="h-10 w-10 text-gray-300" />
+                )}
               </div>
-              <div>
-                <h3 className="text-3xl font-bold tracking-tight">{result.name}</h3>
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-3xl font-bold tracking-tight">{result.name}</h3>
+                </div>
                 <p className="text-blue-600 font-medium">{result.brand || "Marca por definir"}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <div className={cn(
@@ -141,12 +171,40 @@ export function IdentityPage() {
                 </div>
               </div>
             </div>
-            <button 
-              onClick={saveCompany}
-              className="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-black transition-all"
-            >
-              Confirmar y Registrar
-            </button>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={saveCompany}
+                className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-black transition-all shadow-lg"
+              >
+                Confirmar y Registrar
+              </button>
+            </div>
+          </div>
+
+          {/* Logo Edit Field */}
+          <div className="col-span-2 bg-blue-50/50 p-6 rounded-2xl border border-blue-100 space-y-4">
+             <div className="flex items-center justify-between">
+                <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">Logotipo de Empresa</div>
+                <label className="cursor-pointer bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm">
+                   Subir Imagen Local
+                   <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                </label>
+             </div>
+             <div className="flex items-center gap-4">
+                <input 
+                  type="text" 
+                  value={result.logoUrl || ''} 
+                  onChange={(e) => setResult({...result, logoUrl: e.target.value})}
+                  placeholder="O pega una URL de imagen..."
+                  className="flex-1 bg-white border border-blue-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+                {result.logoUrl && (
+                  <div className="h-12 w-12 rounded-xl bg-white border border-blue-200 p-1 flex items-center justify-center overflow-hidden shadow-sm">
+                    <img src={result.logoUrl} alt="Preview" className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" />
+                  </div>
+                )}
+             </div>
+             <p className="text-[10px] text-blue-400">Sugerencia: Usa una imagen cuadrada o con fondo transparente para un mejor resultado.</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">

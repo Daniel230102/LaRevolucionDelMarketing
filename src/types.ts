@@ -2,6 +2,7 @@ export interface Company {
   id: string;
   name: string;
   domain: string;
+  logoUrl?: string;
   sector?: string;
   location?: string;
   socials?: Record<string, string>;
@@ -67,6 +68,7 @@ export interface AutomationTask {
   scheduledAt: string;
   status: 'pending' | 'completed' | 'failed';
   adaptation: string;
+  logoUrl?: string;
 }
 
 export interface TrackReport {

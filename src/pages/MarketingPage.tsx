@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { PenTool, Sparkles, Send, Calendar, Check, Layers, Image as ImageIcon, MessageSquare, Twitter, Instagram, Linkedin, Facebook, Copy } from 'lucide-react';
+import { PenTool, Sparkles, Send, Calendar, Check, Layers, Image as ImageIcon, MessageSquare, Twitter, Instagram, Linkedin, Facebook, Copy, RefreshCw } from 'lucide-react';
 import { useCompany } from '../lib/CompanyContext';
+import { useAuth } from '../lib/AuthContext';
 import { useTrack } from '../lib/useTrack';
 import { ai, MODELS } from '../lib/gemini';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -22,6 +23,7 @@ const channels = [
 
 export function MarketingPage() {
   const { selectedCompany } = useCompany();
+  const { user } = useAuth();
   const { logAction } = useTrack();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
@@ -29,6 +31,15 @@ export function MarketingPage() {
   const [selectedChannel, setSelectedChannel] = useState(channels[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<string>('');
+  const [logoUrl, setLogoUrl] = useState<string>(selectedCompany?.logoUrl || '');
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (selectedCompany?.logoUrl) {
+      setLogoUrl(selectedCompany.logoUrl);
+    }
+  }, [selectedCompany]);
 
   useEffect(() => {
     if (!selectedCompany) return;
@@ -67,10 +78,10 @@ export function MarketingPage() {
       
       ESTRUCTURA DEL RESULTADO (Usa Markdown):
       ## 📝 Propuesta de Contenido
-      [Aquí el cuerpo del mensaje o contenido principal]
+      [Aquí el cuerpo del mensaje o contenido principal. Sé creativo con el uso de emojis y espaciado.]
 
       ## 💡 Consejos Estratégicos
-      [Recomendaciones breves de por qué este contenido funcionará]
+      [Recomendaciones breves de por qué este contenido funcionará: tono, audiencia, etc.]
 
       ## 🏷️ Hashtags sugeridos
       [Si aplica]
@@ -94,20 +105,38 @@ export function MarketingPage() {
 
   const scheduleContent = async () => {
     if (!selectedCompany || !result) return;
+    setIsScheduling(true);
     const path = `companies/${selectedCompany.id}/automations`;
+
+    // Extract time from suggested content if possible
+    // Looking for patterns like "10:00", "14:30", etc. in the "Horario óptimo" section
+    let scheduledDate = new Date(Date.now() + 86400000); // Default: Tomorrow
+    const timeMatch = result.match(/(\d{2}):(\d{2})/);
+    if (timeMatch) {
+      scheduledDate.setHours(parseInt(timeMatch[1], 10), parseInt(timeMatch[2], 10), 0);
+    }
+
     try {
       await addDoc(collection(db, path), {
+        ownerId: user.uid,
         channel: selectedChannel,
         contentType: selectedType,
         content: result,
         status: 'pending',
-        scheduledAt: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-        createdAt: new Date().toISOString()
+        scheduledAt: scheduledDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        logoUrl: logoUrl,
+        adaptation: "original",
+        hashtags: []
       });
       logAction("Tarea Programada", "Automatización", `Se programó un post para ${selectedChannel}`);
-      alert("Contenido programado para mañana");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     } catch (e) { 
       handleFirestoreError(e, OperationType.CREATE, path);
+    } finally {
+      setIsScheduling(false);
     }
   };
 
@@ -115,6 +144,26 @@ export function MarketingPage() {
     if (!result) return;
     navigator.clipboard.writeText(result);
     alert("Contenido copiado al portapapeles");
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 800000) { // Slightly larger limit
+        alert("El logotipo es demasiado grande. Por favor usa una imagen menor a 800KB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setLogoUrl(reader.result);
+        }
+      };
+      reader.onerror = () => {
+        alert("Error al cargar la imagen. Inténtalo de nuevo.");
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero.</div>;
@@ -178,6 +227,30 @@ export function MarketingPage() {
             </select>
           </div>
 
+          <div className="space-y-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] uppercase font-bold text-gray-400">Logotipo Empresa</label>
+              <label className="cursor-pointer bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-all shadow-sm">
+                 Subir Local
+                 <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <input 
+                type="text"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="URL del logotipo..."
+                className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+              {logoUrl && (
+                <div className="h-10 w-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                  <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" />
+                </div>
+              )}
+            </div>
+          </div>
+
           <button 
             onClick={generateContent}
             disabled={isGenerating}
@@ -232,11 +305,15 @@ export function MarketingPage() {
             >
               <div className="flex justify-between items-center bg-gray-900 p-4 rounded-2xl border border-gray-800 text-white shadow-lg">
                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/10 rounded-lg">
-                       <Send className="h-4 w-4 text-blue-400" />
+                    <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
+                       {logoUrl ? (
+                         <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain p-1" referrerPolicy="no-referrer" />
+                       ) : (
+                         <Send className="h-4 w-4 text-blue-400" />
+                       )}
                     </div>
                     <div>
-                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Content Hub</p>
+                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Content Hub Preview</p>
                        <h4 className="text-sm font-bold">{selectedType} · {selectedChannel}</h4>
                     </div>
                  </div>
@@ -249,18 +326,23 @@ export function MarketingPage() {
                     </button>
                     <button 
                       onClick={scheduleContent} 
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all border border-blue-400/30"
+                      disabled={isScheduling || showSuccess}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg",
+                        showSuccess ? "bg-green-500 text-white" : "bg-blue-500 hover:bg-blue-400 text-white shadow-blue-500/20"
+                      )}
                     >
-                      <Calendar className="h-3.5 w-3.5" /> Programar
+                      {isScheduling ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : showSuccess ? <Check className="h-3.5 w-3.5" /> : <Calendar className="h-3.5 w-3.5" />}
+                      {isScheduling ? "Programando..." : showSuccess ? "¡Programado!" : "Programar"}
                     </button>
                  </div>
               </div>
               
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <PenTool className="h-24 w-24 -rotate-12" />
+              <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+                  <Layers className="h-48 w-48 -rotate-12" />
                 </div>
-                <div className="prose prose-sm max-w-none text-gray-700 relative z-10 markdown-content">
+                <div className="prose prose-blue max-w-none text-gray-700 relative z-10 markdown-content">
                   <ReactMarkdown>{result}</ReactMarkdown>
                 </div>
               </div>

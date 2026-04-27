@@ -18,7 +18,7 @@ import { useCompany } from "../../lib/CompanyContext";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: BarChart3 },
+  { to: "/", label: "Panel de Control", icon: BarChart3 },
   { to: "/identity", label: "Identidad", icon: Building2 },
   { to: "/products", label: "Productos", icon: ShoppingBag },
   { to: "/competitors", label: "Competencia", icon: Target },
@@ -35,11 +35,15 @@ export function Sidebar() {
   const [showCompanySelect, setShowCompanySelect] = useState(false);
 
   return (
-    <aside className="w-72 bg-[#151619] border-r border-white/5 flex flex-col h-screen overflow-hidden">
-      <div className="p-6 border-b border-white/5">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-xl">M</div>
-          <span className="font-bold text-white text-lg tracking-tight">MarketMind</span>
+    <aside className="w-72 bg-[#151619] flex flex-col h-screen sticky top-0">
+      <div className="p-8 border-b border-white/5 shrink-0">
+        <div className="flex items-center justify-center mb-8">
+          <img 
+            src="https://lh3.googleusercontent.com/d/1HG5B_tWxzUy7TAQ4yqZdVy-xfMPvjUdU" 
+            alt="Logo" 
+            className="w-full h-20 object-contain px-2"
+            referrerPolicy="no-referrer"
+          />
         </div>
 
         <div className="relative">

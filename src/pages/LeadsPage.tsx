@@ -65,9 +65,9 @@ export function LeadsPage() {
     setError(null);
     const path = `companies/${selectedCompany.id}/leads`;
     try {
-      const prompt = `Generate a list of 5 REALISTIC (but illustrative for demonstration) potential B2B leads for ${selectedCompany.name} in the ${searchParams.sector} sector at ${searchParams.location || 'Global'}. 
-      For each lead return: name (of company), sector, city, country, web, email, phone, contactPerson, role, priority (low/medium/high), source ("Public Search").
-      Return as a JSON array of objects.`;
+      const prompt = `Genera una lista de 5 leads B2B REALISTAS (potenciales clientes) para ${selectedCompany.name} en el sector de ${searchParams.sector} en ${searchParams.location || 'Global'}. 
+      Para cada lead devuelve en español: name (de la empresa), sector, city, country, web, email, phone, contactPerson, role, priority (low/medium/high), source ("Búsqueda Pública").
+      Devuelve como un array JSON de objetos.`;
 
       const response = await ai.models.generateContent({
         model: MODELS.flash,
@@ -117,7 +117,7 @@ export function LeadsPage() {
     }
   };
 
-  if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero.</div>;
+  if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero en el menú lateral.</div>;
 
   return (
     <div className="space-y-8">

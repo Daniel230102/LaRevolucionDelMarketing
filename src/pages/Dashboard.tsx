@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useCompany } from '../lib/CompanyContext';
 import { 
@@ -7,12 +8,58 @@ import {
   Activity, 
   AlertCircle,
   ArrowUpRight,
-  Plus
+  Plus,
+  Building2,
+  Clock,
+  ShoppingBag
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { collection, query, onSnapshot, limit, orderBy } from 'firebase/firestore';
+import { cn } from '../lib/utils';
 
 export function Dashboard() {
   const { selectedCompany } = useCompany();
+  const [counts, setCounts] = useState({ leads: 0, competitors: 0, products: 0 });
+  const [reports, setReports] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!selectedCompany) return;
+
+    // Leads count
+    const leadsUnsubscribe = onSnapshot(collection(db, 'companies', selectedCompany.id, 'leads'), (s) => {
+      setCounts(prev => ({ ...prev, leads: s.size }));
+    });
+
+    // Competitors count
+    const compUnsubscribe = onSnapshot(collection(db, 'companies', selectedCompany.id, 'competitors'), (s) => {
+      setCounts(prev => ({ ...prev, competitors: s.size }));
+    });
+
+    // Products count
+    const prodUnsubscribe = onSnapshot(collection(db, 'companies', selectedCompany.id, 'products'), (s) => {
+      setCounts(prev => ({ ...prev, products: s.size }));
+    });
+
+    // Recent Activity
+    const q = query(
+      collection(db, 'companies', selectedCompany.id, 'reports'), 
+      orderBy('timestamp', 'desc'),
+      limit(5)
+    );
+    const reportsUnsubscribe = onSnapshot(q, (s) => {
+      setReports(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (err) => {
+      handleFirestoreError(err, OperationType.LIST, `companies/${selectedCompany.id}/reports`);
+    });
+
+    return () => {
+      leadsUnsubscribe();
+      compUnsubscribe();
+      prodUnsubscribe();
+      reportsUnsubscribe();
+    };
+  }, [selectedCompany]);
 
   if (!selectedCompany) {
     return (
@@ -38,9 +85,9 @@ export function Dashboard() {
       className="space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard label="Leads Totales" value="128" icon={Users} color="blue" trend="+12% este mes" />
-        <StatCard label="Competidores" value="8" icon={Target} color="purple" trend="2 nuevos" />
-        <StatCard label="Campañas Activas" value="4" icon={TrendingUp} color="green" trend="Estable" />
+        <StatCard label="Leads Totales" value={counts.leads.toString()} icon={Users} color="blue" trend={`${selectedCompany.name}`} />
+        <StatCard label="Competidores" value={counts.competitors.toString()} icon={Target} color="purple" trend="Mercado Objetivo" />
+        <StatCard label="Productos" value={counts.products.toString()} icon={ShoppingBag} color="green" trend="Catálogo Activo" />
         <StatCard label="Salud de Marca" value="92%" icon={Activity} color="orange" trend="Excelente" />
       </div>
 
@@ -48,28 +95,23 @@ export function Dashboard() {
         <div className="md:col-span-2 space-y-8">
           <section className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold">Actividad Reciente (Track Report)</h3>
-              <button className="text-sm text-blue-600 font-medium">Ver todo</button>
+              <h3 className="text-lg font-bold">Actividad Reciente</h3>
+              <Link to="/reports" className="text-sm text-blue-600 font-medium hover:underline">Ver todo</Link>
             </div>
             <div className="space-y-4">
-              <ActivityItem 
-                title="Nueva Identidad Registrada" 
-                time="Hace 2 horas" 
-                desc={`Se ha completado el análisis de ${selectedCompany.name}`}
-                icon={Building2}
-              />
-              <ActivityItem 
-                title="Lead Calificado" 
-                time="Hace 4 horas" 
-                desc="TechSolutions SA ha sido marcado como Alta Prioridad"
-                icon={Users}
-              />
-              <ActivityItem 
-                title="Automatización Ejecutada" 
-                time="Ayer" 
-                desc="Publicación programada para LinkedIn completada"
-                icon={TrendingUp}
-              />
+              {reports.length > 0 ? reports.map((report) => (
+                <ActivityItem 
+                  key={report.id}
+                  title={report.action} 
+                  time={new Date(report.timestamp).toLocaleTimeString()} 
+                  desc={report.details}
+                  icon={report.category === "Leads" ? Users : report.category === "Competencia" ? Target : report.category === "Producto" ? ShoppingBag : Activity}
+                />
+              )) : (
+                <div className="text-center py-10 text-gray-400 text-sm italic">
+                  No hay actividad reciente registrada para esta empresa.
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -78,30 +120,30 @@ export function Dashboard() {
           <section className="bg-[#1A1D23] rounded-2xl p-6 text-white overflow-hidden relative">
             <div className="relative z-10">
               <h3 className="font-bold mb-2 flex items-center gap-2 text-blue-400">
-                <AlertCircle className="h-5 w-5" /> IA Suggestion
+                <AlertCircle className="h-5 w-5" /> Sugerencia IA
               </h3>
               <p className="text-sm text-gray-400 leading-relaxed italic">
-                "Hemos detectado un aumento del 15% en la actividad de tu competidor principal en LinkedIn. Sugerimos generar una campaña de contraste enfocada en tus Ventajas Competitivas."
+                "Hemos detectado que {selectedCompany.name} podría beneficiarse de un análisis de mercado más profundo. ¿Has revisado a tus nuevos competidores?"
               </p>
-              <button className="mt-4 text-sm font-bold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200">
-                Ver Análisis
-              </button>
+              <Link to="/competitors" className="inline-block mt-4 text-sm font-bold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200">
+                Ver Competencia
+              </Link>
             </div>
           </section>
 
           <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h3 className="font-bold mb-4">Métricas de ROI Estimado</h3>
+            <h3 className="font-bold mb-4">Resumen {selectedCompany.name}</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-end">
-                <span className="text-sm text-gray-500">CPA (Coste por Adquisición)</span>
-                <span className="text-lg font-bold text-gray-900">$12.40</span>
+                <span className="text-sm text-gray-500">Sector</span>
+                <span className="text-sm font-bold text-gray-900">{selectedCompany.sector}</span>
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-sm text-gray-500">ROI (Retorno de Inversión)</span>
-                <span className="text-lg font-bold text-green-600">3.4x</span>
+                <span className="text-sm text-gray-500">Ubicación</span>
+                <span className="text-sm font-bold text-gray-900">{selectedCompany.location}</span>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-600 w-[64%]" />
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-blue-600 w-[100%]" />
               </div>
             </div>
           </section>
@@ -131,7 +173,7 @@ function StatCard({ label, value, icon: Icon, color, trend }: any) {
         <h4 className="text-2xl font-bold tracking-tight">{value}</h4>
         <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">{label}</p>
       </div>
-      <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+      <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1 line-clamp-1">
         {trend}
       </p>
     </div>
@@ -154,7 +196,3 @@ function ActivityItem({ title, time, desc, icon: Icon }: any) {
     </div>
   );
 }
-
-// Fixed import for Building2
-import { cn } from '../lib/utils';
-import { Building2, Clock } from 'lucide-react';

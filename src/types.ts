@@ -23,6 +23,7 @@ export interface Product {
   benefits: string[];
   targetAudience: string;
   price: number;
+  cost: number;
   competitiveAdvantages: string;
   maturity: string;
   aiSuggestions?: string;

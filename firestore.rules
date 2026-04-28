@@ -39,7 +39,9 @@ service cloud.firestore {
     }
 
     function isValidProduct(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() < 256;
+      return data.name is string && data.name.size() > 0 && data.name.size() < 256
+        && (!('price' in data) || (data.price is number))
+        && (!('cost' in data) || (data.cost is number));
     }
 
     function isValidLead(data) {

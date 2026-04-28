@@ -61,8 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (err.code === 'auth/unauthorized-domain') {
         const domain = window.location.hostname;
         message = `Dominio no autorizado. Debes añadir "${domain}" en la consola de Firebase > Authentication > Settings > Authorized Domains.`;
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        message = "La ventana se cerró antes de completar el proceso. Inténtalo de nuevo.";
+      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        // Do not set error state for user-initiated cancellations or duplicate requests
+        console.log("AuthProvider: Sign in cancelled or request overlapped.");
+        return;
       } else if (err.code === 'auth/operation-not-allowed') {
         message = "El proveedor de Google no está habilitado en tu consola de Firebase.";
       } else if (err.code === 'auth/popup-blocked') {

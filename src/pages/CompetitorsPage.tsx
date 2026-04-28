@@ -35,9 +35,9 @@ export function CompetitorsPage() {
     setIsSearching(true);
     const path = `companies/${selectedCompany.id}/competitors`;
     try {
-      const prompt = `Search and analyze key competitors for ${selectedCompany.name} (Sector: ${selectedCompany.sector}) in the context of "${queryName}". 
-      Provide details for ONE major competitor: name, web, valueProposition, strengths, weaknesses, differentiation. 
-      Return as JSON.`;
+      const prompt = `Busca y analiza competidores clave para ${selectedCompany.name} (Sector: ${selectedCompany.sector}) en el contexto de "${queryName}". 
+      Proporciona detalles para UN competidor principal en español: name, web, valueProposition, strengths, weaknesses, differentiation. 
+      Devuelve como JSON.`;
 
       const response = await ai.models.generateContent({
         model: MODELS.flash,
@@ -69,7 +69,7 @@ export function CompetitorsPage() {
     }
   };
 
-  if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero.</div>;
+  if (!selectedCompany) return <div className="text-center py-20 text-gray-500">Selecciona una empresa primero en el menú lateral.</div>;
 
   return (
     <div className="space-y-8">

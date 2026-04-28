@@ -31,6 +31,7 @@
         "benefits": { "type": "array" },
         "targetAudience": { "type": "string" },
         "price": { "type": "number" },
+        "cost": { "type": "number" },
         "competitiveAdvantages": { "type": "string" },
         "maturity": { "type": "string" },
         "aiSuggestions": { "type": "string" }

@@ -43,7 +43,7 @@ function ProtectedLayout({ children }: { children: ReactNode }) {
                   switch(path) {
                     case '/': return 'Panel de Control';
                     case '/identity': return 'Identidad';
-                    case '/products': return 'Productos';
+                    case '/productos': return 'Productos';
                     case '/competitors': return 'Competencia';
                     case '/leads': return 'Clientes / Leads';
                     case '/marketing': return 'Content Hub';
@@ -89,7 +89,7 @@ export default function App() {
             <Route path="/login" element={<LoginRoute />} />
             <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
             <Route path="/identity" element={<ProtectedLayout><IdentityPage /></ProtectedLayout>} />
-            <Route path="/products" element={<ProtectedLayout><ProductsPage /></ProtectedLayout>} />
+            <Route path="/productos" element={<ProtectedLayout><ProductsPage /></ProtectedLayout>} />
             <Route path="/competitors" element={<ProtectedLayout><CompetitorsPage /></ProtectedLayout>} />
             <Route path="/leads" element={<ProtectedLayout><LeadsPage /></ProtectedLayout>} />
             <Route path="/marketing" element={<ProtectedLayout><MarketingPage /></ProtectedLayout>} />

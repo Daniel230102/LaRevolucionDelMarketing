@@ -20,7 +20,7 @@ import { useState } from "react";
 const navItems = [
   { to: "/", label: "Panel de Control", icon: BarChart3 },
   { to: "/identity", label: "Identidad", icon: Building2 },
-  { to: "/products", label: "Productos", icon: ShoppingBag },
+  { to: "/productos", label: "Productos", icon: ShoppingBag },
   { to: "/competitors", label: "Competencia", icon: Target },
   { to: "/leads", label: "Clientes / Leads", icon: Users },
   { to: "/marketing", label: "Content Hub", icon: PenTool },
@@ -39,7 +39,7 @@ export function Sidebar() {
       <div className="p-8 border-b border-white/5 shrink-0">
         <div className="flex items-center justify-center mb-8">
           <img 
-            src="https://lh3.googleusercontent.com/d/1HG5B_tWxzUy7TAQ4yqZdVy-xfMPvjUdU" 
+            src="https://drive.google.com/uc?export=view&id=1HG5B_tWxzUy7TAQ4yqZdVy-xfMPvjUdU" 
             alt="Logo" 
             className="w-full h-20 object-contain px-2"
             referrerPolicy="no-referrer"

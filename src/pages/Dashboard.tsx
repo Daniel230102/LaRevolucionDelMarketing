@@ -85,10 +85,18 @@ export function Dashboard() {
       className="space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard label="Leads Totales" value={counts.leads.toString()} icon={Users} color="blue" trend={`${selectedCompany.name}`} />
-        <StatCard label="Competidores" value={counts.competitors.toString()} icon={Target} color="purple" trend="Mercado Objetivo" />
-        <StatCard label="Productos" value={counts.products.toString()} icon={ShoppingBag} color="green" trend="Catálogo Activo" />
-        <StatCard label="Salud de Marca" value="92%" icon={Activity} color="orange" trend="Excelente" />
+        <Link to="/leads" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <StatCard label="Leads Totales" value={counts.leads.toString()} icon={Users} color="blue" trend={`${selectedCompany.name}`} />
+        </Link>
+        <Link to="/competitors" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <StatCard label="Competidores" value={counts.competitors.toString()} icon={Target} color="purple" trend="Mercado Objetivo" />
+        </Link>
+        <Link to="/productos" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <StatCard label="Productos" value={counts.products.toString()} icon={ShoppingBag} color="green" trend="Catálogo Activo" />
+        </Link>
+        <Link to="/marketing" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+          <StatCard label="Salud de Marca" value="92%" icon={Activity} color="orange" trend="Excelente" />
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

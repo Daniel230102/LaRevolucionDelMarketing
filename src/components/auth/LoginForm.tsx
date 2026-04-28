@@ -98,12 +98,13 @@ export function LoginForm() {
             </div>
             <div className="relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-20 blur group-hover:opacity-30 transition"></div>
-              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23] flex items-center justify-center">
-                 <div className="p-8 text-center">
-                    <BarChart3 className="h-32 w-32 text-blue-500/20 mb-4 mx-auto" />
-                    <div className="h-4 w-48 bg-white/5 rounded mx-auto mb-2" />
-                    <div className="h-4 w-32 bg-white/5 rounded mx-auto" />
-                 </div>
+              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23]">
+                <img 
+                  src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=800&auto=format&fit=crop" 
+                  alt="Multi-company Analysis"
+                  className="h-full w-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D23] via-transparent to-transparent" />
               </div>
             </div>
           </motion.div>
@@ -117,15 +118,13 @@ export function LoginForm() {
           >
             <div className="order-2 lg:order-1 relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 opacity-20 blur group-hover:opacity-30 transition"></div>
-              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23] flex items-center justify-center">
-                <div className="p-8 text-center">
-                    <Target className="h-32 w-32 text-purple-500/20 mb-4 mx-auto" />
-                    <div className="flex gap-2 justify-center mb-4">
-                      <div className="h-8 w-8 rounded-full bg-white/5" />
-                      <div className="h-8 w-8 rounded-full bg-white/5" />
-                      <div className="h-8 w-8 rounded-full bg-white/10 scale-125" />
-                    </div>
-                 </div>
+              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23]">
+                <img 
+                  src="https://images.unsplash.com/photo-1542744094-3a31f272c490?q=80&w=800&auto=format&fit=crop" 
+                  alt="Competitor Strategy"
+                  className="h-full w-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D23] via-transparent to-transparent" />
               </div>
             </div>
             <div className="order-1 lg:order-2 space-y-6">
@@ -167,16 +166,13 @@ export function LoginForm() {
             </div>
             <div className="relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 opacity-20 blur group-hover:opacity-30 transition"></div>
-              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23] flex items-center justify-center">
-                <div className="p-8 text-center">
-                    <TrendingUp className="h-32 w-32 text-orange-500/20 mb-4 mx-auto" />
-                    <div className="flex items-end gap-1 h-20 items-end justify-center">
-                      <div className="w-4 h-8 bg-white/5 rounded-t" />
-                      <div className="w-4 h-12 bg-white/10 rounded-t" />
-                      <div className="w-4 h-16 bg-white/20 rounded-t" />
-                      <div className="w-4 h-24 bg-white/30 rounded-t" />
-                    </div>
-                 </div>
+              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23]">
+                <img 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" 
+                  alt="ROI Data Science"
+                  className="h-full w-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D23] via-transparent to-transparent" />
               </div>
             </div>
           </motion.div>
@@ -190,14 +186,13 @@ export function LoginForm() {
           >
              <div className="order-2 lg:order-1 relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-400 to-blue-600 opacity-20 blur group-hover:opacity-30 transition"></div>
-              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23] flex items-center justify-center">
-                <div className="p-8 text-center">
-                    <Users className="h-32 w-32 text-blue-400/20 mb-4 mx-auto" />
-                    <div className="space-y-2">
-                       <div className="h-2 w-32 bg-white/10 rounded mx-auto" />
-                       <div className="h-2 w-24 bg-white/5 rounded mx-auto" />
-                    </div>
-                 </div>
+              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23]">
+                <img 
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" 
+                  alt="Team Collaboration Leads"
+                  className="h-full w-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D23] via-transparent to-transparent" />
               </div>
             </div>
             <div className="order-1 lg:order-2 space-y-6">
@@ -239,15 +234,13 @@ export function LoginForm() {
             </div>
             <div className="relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-600 to-cyan-600 opacity-20 blur group-hover:opacity-30 transition"></div>
-              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23] flex items-center justify-center">
-                <div className="p-8 text-center">
-                    <Zap className="h-32 w-32 text-emerald-500/20 mb-4 mx-auto" />
-                    <div className="flex flex-col gap-2 items-center">
-                      <div className="h-2 w-32 bg-white/5 rounded" />
-                      <div className="h-2 w-48 bg-white/10 rounded" />
-                      <div className="h-2 w-40 bg-white/5 rounded" />
-                    </div>
-                 </div>
+              <div className="relative h-[400px] overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D23]">
+                <img 
+                  src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" 
+                  alt="High Tech Automation"
+                  className="h-full w-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1D23] via-transparent to-transparent" />
               </div>
             </div>
           </motion.div>

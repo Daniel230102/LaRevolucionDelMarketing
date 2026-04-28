@@ -35,8 +35,24 @@ function ProtectedLayout({ children }: { children: ReactNode }) {
           <header className="mb-8 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
-                {location.pathname === '/' ? 'Panel de Control' : 
-                 location.pathname.slice(1).charAt(0).toUpperCase() + location.pathname.slice(2)}
+                {(() => {
+                  const path = location.pathname.endsWith('/') && location.pathname !== '/' 
+                    ? location.pathname.slice(0, -1) 
+                    : location.pathname;
+                  
+                  switch(path) {
+                    case '/': return 'Panel de Control';
+                    case '/identity': return 'Identidad';
+                    case '/products': return 'Productos';
+                    case '/competitors': return 'Competencia';
+                    case '/leads': return 'Clientes / Leads';
+                    case '/marketing': return 'Content Hub';
+                    case '/automation': return 'Automatización';
+                    case '/roi': return 'Estimación ROI';
+                    case '/track': return 'Track Report';
+                    default: return 'MarketMind';
+                  }
+                })()}
               </h1>
               <p className="text-sm text-gray-500">
                 {selectedCompany ? `Gestión activa: ${selectedCompany.name}` : 'Selecciona una empresa para comenzar'}

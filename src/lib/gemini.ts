@@ -1,9 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY;
+// Support both standard AI Studio key, Vercel-style VITE_ prefixed key, and the user's custom key
+const apiKey = 
+  (import.meta as any).env?.VITE_GEMINI_API_KEY || 
+  (import.meta as any).env?.VITE_MARKETING_API_KEY || 
+  (import.meta as any).env?.VITE_Marketing_API_KEY || 
+  process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
-  console.warn("GEMINI_API_KEY not found in environment variables.");
+  console.warn("GEMINI_API_KEY not found in environment variables. AI features may not work.");
 }
 
 export const ai = new GoogleGenAI({ 

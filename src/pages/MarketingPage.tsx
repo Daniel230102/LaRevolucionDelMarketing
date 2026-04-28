@@ -284,7 +284,7 @@ export function MarketingPage() {
                   <PenTool className="h-8 w-8 text-gray-300" />
                </div>
                <div>
-                  <h4 className="font-bold text-gray-400">Content Preview</h4>
+                  <h4 className="font-bold text-gray-400">Vista Previa</h4>
                   <p className="text-xs text-gray-400">Selecciona un canal y tipo de contenido para ver la propuesta de la IA aquí.</p>
                </div>
             </div>
@@ -313,7 +313,7 @@ export function MarketingPage() {
                        )}
                     </div>
                     <div>
-                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Content Hub Preview</p>
+                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hub de Marketing</p>
                        <h4 className="text-sm font-bold">{selectedType} · {selectedChannel}</h4>
                     </div>
                  </div>

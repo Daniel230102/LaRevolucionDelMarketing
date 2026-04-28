@@ -19,10 +19,10 @@ import { useState } from "react";
 
 const navItems = [
   { to: "/", label: "Panel de Control", icon: BarChart3 },
-  { to: "/identity", label: "Identidad", icon: Building2 },
+  { to: "/identidad", label: "Identidad", icon: Building2 },
   { to: "/productos", label: "Productos", icon: ShoppingBag },
-  { to: "/competitors", label: "Competencia", icon: Target },
-  { to: "/leads", label: "Clientes / Leads", icon: Users },
+  { to: "/competencia", label: "Competencia", icon: Target },
+  { to: "/clientes", label: "Clientes / Leads", icon: Users },
   { to: "/marketing", label: "Content Hub", icon: PenTool },
   { to: "/automation", label: "Automatización", icon: Calendar },
   { to: "/roi", label: "Estimación ROI", icon: Calculator },
@@ -39,7 +39,7 @@ export function Sidebar() {
       <div className="p-8 border-b border-white/5 shrink-0">
         <div className="flex items-center justify-center mb-8">
           <img 
-            src="https://drive.google.com/uc?export=view&id=1HG5B_tWxzUy7TAQ4yqZdVy-xfMPvjUdU" 
+            src="https://lh3.googleusercontent.com/d/1HG5B_tWxzUy7TAQ4yqZdVy-xfMPvjUdU" 
             alt="Logo" 
             className="w-full h-20 object-contain px-2"
             referrerPolicy="no-referrer"
@@ -79,7 +79,7 @@ export function Sidebar() {
               ))}
               <div className="h-px bg-white/10 my-2" />
               <NavLink 
-                to="/identity" 
+                to="/identidad" 
                 className="block px-4 py-2 text-sm text-blue-500 hover:bg-white/5"
                 onClick={() => setShowCompanySelect(false)}
               >

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { PenTool, Sparkles, Send, Calendar, Check, Layers, Image as ImageIcon, MessageSquare, Twitter, Instagram, Linkedin, Facebook, Copy, RefreshCw } from 'lucide-react';
+import { PenTool, Sparkles, Send, Calendar, Check, Layers, Image as ImageIcon, MessageSquare, Twitter, Instagram, Linkedin, Facebook, Copy, RefreshCw, X } from 'lucide-react';
 import { useCompany } from '../lib/CompanyContext';
 import { useAuth } from '../lib/AuthContext';
 import { useTrack } from '../lib/useTrack';
@@ -34,6 +34,10 @@ export function MarketingPage() {
   const [logoUrl, setLogoUrl] = useState<string>(selectedCompany?.logoUrl || '');
   const [isScheduling, setIsScheduling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>('');
 
   useEffect(() => {
     if (selectedCompany?.logoUrl) {
@@ -137,6 +141,40 @@ export function MarketingPage() {
       handleFirestoreError(e, OperationType.CREATE, path);
     } finally {
       setIsScheduling(false);
+    }
+  };
+
+  const generateImage = async () => {
+    if (!selectedCompany && !result) return;
+    setIsGeneratingImage(true);
+    
+    try {
+      // Use Gemini to generate a high quality image prompt first
+      const context = result || `Empresa: ${selectedCompany?.name}. Sector: ${selectedCompany?.sector}`;
+      const promptRequest = `Genera un prompt detallado para un generador de imágenes de IA (como Midjourney o DALL-E) basado en este contenido de marketing: "${context}". 
+      El estilo debe ser ${selectedChannel === 'linkedin' ? 'profesional y minimalista' : 'vibrante y llamativo'}. 
+      Incluye detalles sobre iluminación, composición y ambiente.
+      IMPORTANTE: Devuelve SOLO el prompt en inglés para que la IA lo entienda mejor. NO añadidas nada más.`;
+
+      const response = await ai.models.generateContent({
+        model: MODELS.flash,
+        contents: promptRequest
+      });
+
+      const finalPrompt = response.text.trim();
+      setImagePrompt(finalPrompt);
+      
+      // Use pollinations.ai for actual image generation (no key needed, works great for demos)
+      const encodedPrompt = encodeURIComponent(finalPrompt);
+      const imageUrl = `https://pollinations.ai/p/${encodedPrompt}?width=1080&height=1080&seed=${Math.floor(Math.random() * 1000)}&nologo=true`;
+      
+      setGeneratedImageUrl(imageUrl);
+      logAction("Imagen Generada", "Marketing", `Se generó imagen para ${selectedChannel}`);
+    } catch (e) {
+      console.error(e);
+      alert("Error al generar el diseño. Prueba de nuevo en unos segundos.");
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -267,10 +305,112 @@ export function MarketingPage() {
            <p className="text-xs text-blue-100 leading-relaxed">
              Estamos preparados para generar creatividades visuales adaptadas a cada canal usando modelos generativos avanzados.
            </p>
-           <button className="w-full bg-white/10 border border-white/20 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition-all">
+           <button 
+             onClick={() => setIsImageModalOpen(true)}
+             className="w-full bg-white/10 border border-white/20 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition-all"
+           >
              Configurar Imagen AI
            </button>
         </section>
+
+        {/* AI Image Modal */}
+        {isImageModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-[2rem] w-full max-w-2xl overflow-hidden shadow-2xl border border-white/20"
+            >
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                    <ImageIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 italic">Diseño Inteligente AI</h3>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Generación de Creatividades</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsImageModalOpen(false)}
+                  className="h-8 w-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-all"
+                >
+                  <X className="h-5 w-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 italic relative">
+                       <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-yellow-400 fill-yellow-400" />
+                       <p className="text-xs text-blue-800 leading-relaxed">
+                         "Utilizaremos el contexto de tu campaña actual para generar una imagen única optimizada para {selectedChannel}."
+                       </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                       <label className="text-[10px] uppercase font-bold text-gray-400">Contexto del Prompt (AI)</label>
+                       <textarea 
+                         className="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"
+                         placeholder="El prompt se generará automáticamente a partir del contenido del Hub..."
+                         value={imagePrompt}
+                         onChange={(e) => setImagePrompt(e.target.value)}
+                       />
+                    </div>
+
+                    <button 
+                      onClick={generateImage}
+                      disabled={isGeneratingImage}
+                      className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
+                    >
+                      {isGeneratingImage ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      {isGeneratingImage ? "Generando Arte..." : "Generar Imagen Ahora"}
+                    </button>
+                  </div>
+
+                  <div className="bg-gray-100 rounded-3xl overflow-hidden aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-200 relative group">
+                    {generatedImageUrl ? (
+                      <>
+                        <img 
+                          src={generatedImageUrl} 
+                          alt="AI Generated" 
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                           <button 
+                             onClick={() => {
+                               setLogoUrl(generatedImageUrl);
+                               setIsImageModalOpen(false);
+                             }}
+                             className="bg-white text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all"
+                           >
+                             Usar como Logotipo en Campaña
+                           </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center p-6 space-y-3">
+                         <div className="h-12 w-12 bg-white rounded-2xl mx-auto flex items-center justify-center shadow-sm">
+                            <ImageIcon className="h-6 w-6 text-gray-300" />
+                         </div>
+                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight">La creatividad aparecerá aquí</p>
+                      </div>
+                    )}
+                    {isGeneratingImage && (
+                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center p-8 text-center gap-4">
+                         <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                         <p className="text-xs font-bold text-gray-900 border-b-2 border-blue-600 pb-1">Mezclando píxeles mágicos...</p>
+                         <p className="text-[10px] text-gray-500 italic leading-relaxed">Esto suele tardar unos 10-15 segundos según la complejidad</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       <div className="lg:col-span-2 space-y-6">

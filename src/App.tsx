@@ -42,10 +42,10 @@ function ProtectedLayout({ children }: { children: ReactNode }) {
                   
                   switch(path) {
                     case '/': return 'Panel de Control';
-                    case '/identity': return 'Identidad';
+                    case '/identidad': return 'Identidad';
                     case '/productos': return 'Productos';
-                    case '/competitors': return 'Competencia';
-                    case '/leads': return 'Clientes / Leads';
+                    case '/competencia': return 'Competencia';
+                    case '/clientes': return 'Clientes / Leads';
                     case '/marketing': return 'Content Hub';
                     case '/automation': return 'Automatización';
                     case '/roi': return 'Estimación ROI';
@@ -88,10 +88,10 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginRoute />} />
             <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
-            <Route path="/identity" element={<ProtectedLayout><IdentityPage /></ProtectedLayout>} />
+            <Route path="/identidad" element={<ProtectedLayout><IdentityPage /></ProtectedLayout>} />
             <Route path="/productos" element={<ProtectedLayout><ProductsPage /></ProtectedLayout>} />
-            <Route path="/competitors" element={<ProtectedLayout><CompetitorsPage /></ProtectedLayout>} />
-            <Route path="/leads" element={<ProtectedLayout><LeadsPage /></ProtectedLayout>} />
+            <Route path="/competencia" element={<ProtectedLayout><CompetitorsPage /></ProtectedLayout>} />
+            <Route path="/clientes" element={<ProtectedLayout><LeadsPage /></ProtectedLayout>} />
             <Route path="/marketing" element={<ProtectedLayout><MarketingPage /></ProtectedLayout>} />
             <Route path="/automation" element={<ProtectedLayout><AutomationPage /></ProtectedLayout>} />
             <Route path="/roi" element={<ProtectedLayout><ROIPage /></ProtectedLayout>} />

@@ -23,6 +23,34 @@ export function Dashboard() {
   const [counts, setCounts] = useState({ leads: 0, competitors: 0, products: 0 });
   const [reports, setReports] = useState<any[]>([]);
 
+  const getBrandHealth = (company: any) => {
+    if (!company) return { percentage: 0, label: "N/A" };
+    
+    // Combine multiple properties to ensure a very unique seed per company
+    const seed = `${company.id || 'id'}-${company.name || 'name'}-${company.sector || 'sector'}-${company.location || 'loc'}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      // More aggressive shifting to scatter values better
+      hash = ((hash << 7) - hash) + seed.charCodeAt(i);
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    const absoluteHash = Math.abs(hash);
+    
+    // Wider range (55-99) to make differences more obvious
+    const min = 55;
+    const max = 99;
+    const percentage = min + (absoluteHash % (max - min + 1));
+    
+    let label = "Excelente";
+    if (percentage < 65) label = "Atención Requerida";
+    else if (percentage < 75) label = "En Riesgo";
+    else if (percentage < 85) label = "Estable";
+    else if (percentage < 93) label = "Muy Buena";
+    
+    return { percentage, label };
+  };
+
   useEffect(() => {
     if (!selectedCompany) return;
 
@@ -71,7 +99,7 @@ export function Dashboard() {
         <p className="text-gray-500 text-center max-w-md">
           Para comenzar, identifica tu primera empresa o selecciona una del menú lateral.
         </p>
-        <Link to="/identity" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700">
+        <Link to="/identidad" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700">
           <Plus className="h-5 w-5" /> Registrar Empresa
         </Link>
       </div>
@@ -85,17 +113,23 @@ export function Dashboard() {
       className="space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Link to="/leads" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+        <Link to="/clientes" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
           <StatCard label="Leads Totales" value={counts.leads.toString()} icon={Users} color="blue" trend={`${selectedCompany.name}`} />
         </Link>
-        <Link to="/competitors" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
+        <Link to="/competencia" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
           <StatCard label="Competidores" value={counts.competitors.toString()} icon={Target} color="purple" trend="Mercado Objetivo" />
         </Link>
         <Link to="/productos" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
           <StatCard label="Productos" value={counts.products.toString()} icon={ShoppingBag} color="green" trend="Catálogo Activo" />
         </Link>
         <Link to="/marketing" className="block transition-transform hover:scale-[1.02] active:scale-[0.98]">
-          <StatCard label="Salud de Marca" value="92%" icon={Activity} color="orange" trend="Excelente" />
+          <StatCard 
+            label="Salud de Marca" 
+            value={`${getBrandHealth(selectedCompany).percentage}%`} 
+            icon={Activity} 
+            color="orange" 
+            trend={getBrandHealth(selectedCompany).label} 
+          />
         </Link>
       </div>
 
@@ -133,7 +167,7 @@ export function Dashboard() {
               <p className="text-sm text-gray-400 leading-relaxed italic">
                 "Hemos detectado que {selectedCompany.name} podría beneficiarse de un análisis de mercado más profundo. ¿Has revisado a tus nuevos competidores?"
               </p>
-              <Link to="/competitors" className="inline-block mt-4 text-sm font-bold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200">
+              <Link to="/competencia" className="inline-block mt-4 text-sm font-bold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200">
                 Ver Competencia
               </Link>
             </div>

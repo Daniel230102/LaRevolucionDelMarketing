@@ -19,7 +19,9 @@ const getApiKey = () => {
 const apiKey = getApiKey();
 
 if (!apiKey) {
-  console.warn("GEMINI_API_KEY (o VITE_Marketing_API_KEY) no encontrada. La IA no funcionará.");
+  console.warn("GEMINI_API_KEY (o VITE_Marketing_API_KEY) no encontrada. La IA NO funcionará. Verifica las variables de entorno en Vercel o AI Studio.");
+} else {
+  console.log("Configuración de IA detectada.");
 }
 
 export const ai = new GoogleGenAI({ 
@@ -27,6 +29,6 @@ export const ai = new GoogleGenAI({
 });
 
 export const MODELS = {
-  flash: "gemini-1.5-flash",
-  pro: "gemini-1.5-pro",
+  flash: "gemini-flash-latest",
+  pro: "gemini-3.1-pro-preview",
 };
